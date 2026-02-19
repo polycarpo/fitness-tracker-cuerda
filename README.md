@@ -13,7 +13,7 @@ App web para registrar ejercicios de saltar la cuerda y seguimiento de peso corp
 
 ## 🚀 Cómo usar
 
-1. Abre el link: [https://tunombre.github.io/fitness-tracker-saltos](https://tunombre.github.io/fitness-tracker-saltos)
+1. Abre el link: https://github.com/polycarpo/fitness-tracker-cuerda
 2. Registra tus saltos diarios
 3. Actualiza tu peso semanalmente
 4. Revisa tu progreso en la pestaña "Análisis"
