@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tracker Saltos & Peso</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #f0f0f0;
+            border-bottom: 2px solid #ddd;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            background: #f0f0f0;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            background: white;
+            color: #764ba2;
+            border-bottom: 3px solid #764ba2;
+        }
+        
+        .content {
+            display: none;
+            padding: 30px;
+        }
+        
+        .content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        input, button {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .card {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 5px solid #764ba2;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-box h3 {
+            font-size: 36px;
+            margin: 10px 0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background: #764ba2;
+            color: white;
+        }
+        
+        .delete-btn {
+            background: #f5576c;
+            padding: 5px 10px;
+            width: auto;
+            font-size: 12px;
+        }
+        
+        .chart {
+            height: 200px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            margin: 20px 0;
+            padding: 10px;
+            overflow-x: auto;
+            display: flex;
+            align-items: flex-end;
+            gap: 5px;
+        }
+        
+        .bar {
+            background: linear-gradient(to top, #667eea, #f093fb);
+            border-radius: 4px 4px 0 0;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .bar:hover {
+            opacity: 0.8;
+        }
+        
+        .bar::after {
+            content: attr(data-value);
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .export-btn {
+            background: #4CAF50;
+            margin-top: 20px;
+        }
+        
+        .clear-btn {
+            background: #ff9800;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏃‍♂️ Tracker Fitness</h1>
+            <p>Registro de Saltos y Peso Corporal</p>
+        </header>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('saltos')">📊 Saltos Diarios</button>
+            <button class="tab" onclick="showTab('peso')">⚖️ Peso Corporal</button>
+            <button class="tab" onclick="showTab('sintesis')">📈 Análisis</button>
+        </div>
+        
+        <!-- TAB SALTOS -->
+        <div id="saltos" class="content active">
+            <h2>Registrar Saltos del Día</h2>
+            <div class="form-group">
+                <label for="fechaSaltos">Fecha:</label>
+                <input type="date" id="fechaSaltos" value="">
+            </div>
+            <div class="form-group">
+                <label for="cantidadSaltos">Cantidad de Saltos:</label>
+                <input type="number" id="cantidadSaltos" placeholder="500, 1000, 1500...">
+            </div>
+            <div class="form-group">
+                <label for="tiempoSaltos">Tiempo (minutos):</label>
+                <input type="number" id="tiempoSaltos" placeholder="10, 15, 20...">
+            </div>
+            <button onclick="registrarSaltos()">💾 Guardar Registro</button>
+            
+            <h3 style="margin-top: 30px;">Historial de Saltos</h3>
+            <div id="listaSaltos"></div>
+        </div>
+        
+        <!-- TAB PESO -->
+        <div id="peso" class="content">
+            <h2>Registrar Peso Corporal</h2>
+            <div class="form-group">
+                <label for="fechaPeso">Fecha:</label>
+                <input type="date" id="fechaPeso" value="">
+            </div>
+            <div class="form-group">
+                <label for="pesoValor">Peso (kg):</label>
+                <input type="number" id="pesoValor" step="0.1" placeholder="70.5">
+            </div>
+            <button onclick="registrarPeso()">💾 Guardar Peso</button>
+            
+            <h3 style="margin-top: 30px;">Progreso de Peso</h3>
+            <div id="listaPeso"></div>
+        </div>
+        
+        <!-- TAB SÍNTESIS -->
+        <div id="sintesis" class="content">
+            <h2>📊 Análisis y Síntesis</h2>
+            
+            <h3>🏃‍♂️ Síntesis Semanal de Saltos</h3>
+            <div class="stats" id="statsSaltos"></div>
+            <div class="chart" id="chartSaltos"></div>
+            
+            <h3>⚖️ Evaluación de Peso</h3>
+            <div class="stats" id="statsPeso"></div>
+            <div id="evaluacionPeso"></div>
+            
+            <button class="export-btn" onclick="exportarDatos()">📤 Exportar Datos JSON</button>
+            <button class="clear-btn" onclick="limpiarDatos()">🗑️ Limpiar Todos los Datos</button>
+        </div>
+    </div>
+    
+    <script>
+        // INICIALIZACIÓN
+        document.addEventListener('DOMContentLoaded', function() {
+            // Establecer fecha de hoy por defecto
+            const hoy = new Date().toISOString().split('T')[0];
+            document.getElementById('fechaSaltos').value = hoy;
+            document.getElementById('fechaPeso').value = hoy;
+            
+            cargarDatos();
+            actualizarVistas();
+        });
+        
+        // FUNCIONES DE NAVEGACIÓN
+        function showTab(tabName) {
+            const tabs = document.querySelectorAll('.tab');
+            const contents = document.querySelectorAll('.content');
+            
+            tabs.forEach(tab => tab.classList.remove('active'));
+            contents.forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+            
+            if(tabName === 'sintesis') {
+                actualizarSintesis();
+            }
+        }
+        
+        // GESTIÓN DE DATOS
+        let datos = {
+            saltos: [],
+            pesos: []
+        };
+        
+        function cargarDatos() {
+            const guardado = localStorage.getItem('fitnessTracker');
+            if(guardado) {
+                datos = JSON.parse(guardado);
+            }
+        }
+        
+        function guardarDatos() {
+            localStorage.setItem('fitnessTracker', JSON.stringify(datos));
+        }
+        
+        // REGISTRO DE SALTOS
+        function registrarSaltos() {
+            const fecha = document.getElementById('fechaSaltos').value;
+            const cantidad = parseInt(document.getElementById('cantidadSaltos').value);
+            const tiempo = parseInt(document.getElementById('tiempoSaltos').value);
+            
+            if(!fecha || !cantidad || !tiempo) {
+                alert('Por favor completa todos los campos');
+                return;
+            }
+            
+            // Verificar si ya existe registro para esa fecha
+            const existe = datos.saltos.find(s => s.fecha === fecha);
+            if(existe) {
+                if(confirm('Ya existe un registro para esta fecha. ¿Deseas actualizarlo?')) {
+                    existe.cantidad = cantidad;
+                    existe.tiempo = tiempo;
+                } else {
+                    return;
+                }
+            } else {
+                datos.saltos.push({ fecha, cantidad, tiempo });
+            }
+            
+            guardarDatos();
+            actualizarVistaSaltos();
+            document.getElementById('cantidadSaltos').value = '';
+            document.getElementById('tiempoSaltos').value = '';
+            alert('✅ Registro guardado exitosamente');
+        }
+        
+        // REGISTRO DE PESO
+        function registrarPeso() {
+            const fecha = document.getElementById('fechaPeso').value;
+            const peso = parseFloat(document.getElementById('pesoValor').value);
+            
+            if(!fecha || !peso) {
+                alert('Por favor completa todos los campos');
+                return;
+            }
+            
+            const existe = datos.pesos.find(p => p.fecha === fecha);
+            if(existe) {
+                if(confirm('Ya existe un registro de peso para esta fecha. ¿Deseas actualizarlo?')) {
+                    existe.peso = peso;
+                } else {
+                    return;
+                }
+            } else {
+                datos.pesos.push({ fecha, peso });
+            }
+            
+            guardarDatos();
+            actualizarVistaPeso();
+            document.getElementById('pesoValor').value = '';
+            alert('✅ Peso registrado exitosamente');
+        }
+        
+        // ACTUALIZAR VISTAS
+        function actualizarVistas() {
+            actualizarVistaSaltos();
+            actualizarVistaPeso();
+        }
+        
+        function actualizarVistaSaltos() {
+            const contenedor = document.getElementById('listaSaltos');
+            if(datos.saltos.length === 0) {
+                contenedor.innerHTML = '<p class="card">No hay registros de saltos aún.</p>';
+                return;
+            }
+            
+            // Ordenar por fecha descendente
+            const ordenados = [...datos.saltos].sort((a,b) => 
+                new Date(b.fecha) - new Date(a.fecha)
+            );
+            
+            let html = '<table><tr><th>Fecha</th><th>⚡ Saltos</th><th>⏱️ Tiempo</th><th>⚡/min</th><th>Acción</th></tr>';
+            
+            ordenados.forEach((item, index) => {
+                const rpm = Math.round(item.cantidad / item.tiempo);
+                html += `<tr>
+                    <td>${formatoFecha(item.fecha)}</td>
+                    <td><strong>${item.cantidad.toLocaleString()}</strong></td>
+                    <td>${item.tiempo} min</td>
+                    <td>${rpm} saltos/min</td>
+                    <td><button class="delete-btn" onclick="eliminarSalto('${item.fecha}')">🗑️</button></td>
+                </tr>`;
+            });
+            html += '</table>';
+            
+            contenedor.innerHTML = html;
+        }
+        
+        function actualizarVistaPeso() {
+            const contenedor = document.getElementById('listaPeso');
+            if(datos.pesos.length === 0) {
+                contenedor.innerHTML = '<p class="card">No hay registros de peso aún.</p>';
+                return;
+            }
+            
+            // Ordenar por fecha descendente
+            const ordenados = [...datos.pesos].sort((a,b) => 
+                new Date(b.fecha) - new Date(a.fecha)
+            );
+            
+            let html = '<table><tr><th>Fecha</th><th>⚖️ Peso (kg)</th><th>📉 Cambio</th><th>Acción</th></tr>';
+            
+            ordenados.forEach((item, index) => {
+                let cambio = '-';
+                if(index < ordenados.length - 1) {
+                    const diff = ordenados[index + 1].peso - item.peso;
+                    const signo = diff > 0 ? '+' : '';
+                    cambio = `${signo}${diff.toFixed(1)} kg`;
+                }
+                
+                html += `<tr>
+                    <td>${formatoFecha(item.fecha)}</td>
+                    <td><strong>${item.peso}</strong> kg</td>
+                    <td>${cambio}</td>
+                    <td><button class="delete-btn" onclick="eliminarPeso('${item.fecha}')">🗑️</button></td>
+                </tr>`;
+            });
+            html += '</table>';
+            
+            contenedor.innerHTML = html;
+        }
+        
+        // SÍNTESIS Y ANÁLISIS
+        function actualizarSintesis() {
+            // SÍNTESIS SEMANAL SALTOS
+            const statsSaltos = document.getElementById('statsSaltos');
+            const hoy = new Date();
+            const hace7Dias = new Date(hoy.getTime() - 7 * 24 * 60 * 60 * 1000);
+            
+            const saltosSemana = datos.saltos.filter(s => 
+                new Date(s.fecha) >= hace7Dias
+            );
+            
+            const totalSaltos = saltosSemana.reduce((sum, s) => sum + s.cantidad, 0);
+            const totalTiempo = saltosSemana.reduce((sum, s) => sum + s.tiempo, 0);
+            
+            statsSaltos.innerHTML = `
+                <div class="stat-box">
+                    <div>Total Saltos</div>
+                    <h3>${totalSaltos.toLocaleString()}</h3>
+                </div>
+                <div class="stat-box">
+                    <div>Tiempo Total</div>
+                    <h3>${totalTiempo} min</h3>
+                </div>
+                <div class="stat-box">
+                    <div>Promedio Diario</div>
+                    <h3>${saltosSemana.length > 0 ? Math.round(totalSaltos / 7) : 0}</h3>
+                </div>
+                <div class="stat-box">
+                    <div>Días Activos</div>
+                    <h3>${saltosSemana.length}/7</h3>
+                </div>
+            `;
+            
+            // GRÁFICO SALTOS
+            const chartSaltos = document.getElementById('chartSaltos');
+            chartSaltos.innerHTML = '';
+            const ultimos7Dias = [];
+            for(let i = 6; i >= 0; i--) {
+                const fecha = new Date(hoy.getTime() - i * 24 * 60 * 60 * 1000);
+                const fechaStr = fecha.toISOString().split('T')[0];
+                const dia = datos.saltos.find(s => s.fecha === fechaStr);
+                ultimos7Dias.push({
+                    fecha: fecha.toLocaleDateString('es-ES', { weekday: 'short' }),
+                    valor: dia ? dia.cantidad : 0
+                });
+            }
+            
+            const maxValor = Math.max(...ultimos7Dias.map(d => d.valor), 100);
+            ultimos7Dias.forEach(dia => {
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.style.height = `${(dia.valor / maxValor) * 180}px`;
+                bar.style.width = '40px';
+                bar.setAttribute('data-value', dia.valor.toLocaleString());
+                bar.title = `${dia.fecha}: ${dia.valor} saltos`;
+                chartSaltos.appendChild(bar);
+            });
+            
+            // EVALUACIÓN PESO
+            const statsPeso = document.getElementById('statsPeso');
+            const evaluacionPeso = document.getElementById('evaluacionPeso');
+            
+            if(datos.pesos.length < 2) {
+                statsPeso.innerHTML = '<p class="card">Necesita al menos 2 registros de peso para evaluación.</p>';
+                evaluacionPeso.innerHTML = '';
+            } else {
+                const ordenados = [...datos.pesos].sort((a,b) => 
+                    new Date(a.fecha) - new Date(b.fecha)
+                );
+                const pesoInicial = ordenados[0].peso;
+                const pesoActual = ordenados[ordenados.length - 1].peso;
+                const pesoAnterior = ordenados[ordenados.length - 2].peso;
+                const perdidaTotal = pesoInicial - pesoActual;
+                const perdidaReciente = pesoAnterior - pesoActual;
+                
+                const diasRegistro = Math.ceil((new Date(ordenados[ordenados.length - 1].fecha) - new Date(ordenados[0].fecha)) / (1000 * 60 * 60 * 24));
+                const perdidaPromedio = perdidaTotal / (diasRegistro / 7);
+                
+                statsPeso.innerHTML = `
+                    <div class="stat-box">
+                        <div>Peso Inicial</div>
+                        <h3>${pesoInicial} kg</h3>
+                    </div>
+                    <div class="stat-box">
+                        <div>Peso Actual</div>
+                        <h3>${pesoActual} kg</h3>
+                    </div>
+                    <div class="stat-box">
+                        <div>Perdida Total</div>
+                        <h3>${perdidaTotal.toFixed(1)} kg</h3>
+                    </div>
+                    <div class="stat-box">
+                        <div>Pérdida/Semana</div>
+                        <h3>${perdidaPromedio.toFixed(2)} kg</h3>
+                    </div>
+                `;
+                
+                evaluacionPeso.innerHTML = `
+                    <div class="card">
+                        <h4>📊 Evaluación Detallada</h4>
+                        <p><strong>Registros totales:</strong> ${ordenados.length}</p>
+                        <p><strong>Perdida total desde el inicio:</strong> ${perdidaTotal.toFixed(1)} kg</p>
+                        <p><strong>Cambio en último registro:</strong> ${perdidaReciente >= 0 ? '-' : '+'} ${Math.abs(perdidaReciente).toFixed(1)} kg</p>
+                        <p><strong>Pérdida promedio por semana:</strong> ${perdidaPromedio.toFixed(2)} kg</p>
+                        <p><strong>Tendencia:</strong> ${perdidaPromedio > 0 ? 'Bajando de peso ✅' : 'Estable ⚠️'}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // FUNCIONES DE ELIMINACIÓN
+        function eliminarSalto(fecha) {
+            if(confirm('¿Eliminar este registro de saltos?')) {
+                datos.saltos = datos.saltos.filter(s => s.fecha !== fecha);
+                guardarDatos();
+                actualizarVistas();
+                if(document.getElementById('sintesis').classList.contains('active')) {
+                    actualizarSintesis();
+                }
+            }
+        }
+        
+        function eliminarPeso(fecha) {
+            if(confirm('¿Eliminar este registro de peso?')) {
+                datos.pesos = datos.pesos.filter(p => p.fecha !== fecha);
+                guardarDatos();
+                actualizarVistas();
+                if(document.getElementById('sintesis').classList.contains('active')) {
+                    actualizarSintesis();
+                }
+            }
+        }
+        
+        // UTILIDADES
+        function formatoFecha(fechaStr) {
+            const fecha = new Date(fechaStr);
+            return fecha.toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+        }
+        
+        function exportarDatos() {
+            const dataStr = JSON.stringify(datos, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `fitness-tracker-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+        }
+        
+        function limpiarDatos() {
+            if(confirm('⚠️ ¿ESTÁS SEGURO? Esto eliminará TODOS los datos permanentemente.')) {
+                if(confirm('Última advertencia: ¿Realmente quieres borrar todo?')) {
+                    datos = { saltos: [], pesos: [] };
+                    guardarDatos();
+                    actualizarVistas();
+                    if(document.getElementById('sintesis').classList.contains('active')) {
+                        actualizarSintesis();
+                    }
+                    alert('Datos eliminados correctamente');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
